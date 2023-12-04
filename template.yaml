@@ -15,29 +15,43 @@ Globals:
     LoggingConfig:
       LogFormat: JSON
 Resources:
+  DocumentTemplateBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: edurpa-document-template
+
   ProcessSampleDocumentFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Connectors:
+      ConnectS3:
+        Properties:
+          Destination:
+            Id: DocumentTemplateBucket
+          Permissions:
+            - Read
+            - Write
     Properties:
-      CodeUri: process-sample-document/
-      Handler: app.lambda_handler
-      Runtime: python3.9
+      PackageType: Image
       Architectures:
       - x86_64
       Events:
-        SampleDocumentUploadEvent:
+        S3Event:
           Type: S3
           Properties:
-            Bucket:
-              Ref: edurpa-document-template
+            Bucket: !Ref DocumentTemplateBucket
             Events: s3:ObjectCreated:*
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./process-sample-document
+      DockerTag: python3.9-v1
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   ProcessSampleDocumentFunction:
-    Description: "Process Sample Document" Lambda Function ARN
+    Description: Process Sample Document Lambda Function ARN
     Value: !GetAtt ProcessSampleDocumentFunction.Arn
   ProcessSampleDocumentFunctionIamRole:
-    Description: Implicit IAM Role created for "Process Sample Document" function
+    Description: Implicit IAM Role created for Process Sample Document function
     Value: !GetAtt ProcessSampleDocumentFunctionRole.Arn
