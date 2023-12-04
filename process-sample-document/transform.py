@@ -21,14 +21,67 @@ def perspective_transform(image):
     epsilon = 0.02 * cv2.arcLength(largest_contour, True)
     approx = cv2.approxPolyDP(largest_contour, epsilon, True)
 
-    # Draw the contour on the original image
-    cv2.drawContours(image, [approx], -1, (0, 255, 0), 2)
+    # Check if the contour is a quadrilateral
+    if len(approx) != 4:
+        raise Exception('The object in the image is not a document or not a clear picture.')
+
+    # Rearrange the order of the points in the contour to be clockwise from the top left
+    src = np.zeros((4, 1, 2), dtype="float32")
+    for i in range(4):
+        src[i] = approx[i]   
+    dst, size = infer_dst(src)
+    src = rearrange(src)
 
     # Perform perspective transformation to flatten the document
-    pts1 = np.float32(approx)
-    pts2 = np.float32([[0, 0], [0, 600], [800, 600], [800, 0]])  # Size of the output image
-
-    matrix = cv2.getPerspectiveTransform(pts1, pts2)
-    result = cv2.warpPerspective(image, matrix, (800, 600))  # Adjust the output size as needed
+    matrix = cv2.getPerspectiveTransform(src, dst)
+    result = cv2.warpPerspective(image, matrix, size)
 
     return result
+
+def infer_dst(src_pts):
+    dst_pts = np.zeros((4, 2), dtype="float32")
+    size = np.zeros((2), dtype="float32")
+    
+    max_x, min_x, max_y, min_y = get_max_min_x_y(src_pts)
+
+    if max_x - min_x > max_y - min_y:
+        dst_pts[0] = [0, 0]
+        dst_pts[1] = [0, 600]
+        dst_pts[2] = [800, 600]
+        dst_pts[3] = [800, 0]
+        size = (800, 600)
+    else:
+        dst_pts[0] = [0, 0]
+        dst_pts[1] = [0, 800]
+        dst_pts[2] = [600, 800]
+        dst_pts[3] = [600, 0]
+        size = (600, 800)
+    
+    return dst_pts, size
+
+def rearrange(src_pts):
+    result = np.zeros((4, 1, 2), dtype="float32")
+
+    max_x, min_x, max_y, min_y = get_max_min_x_y(src_pts)
+    rec_size = (max_x - min_x, max_y - min_y)
+
+    for i in range(4):
+        if min_x <= src_pts[i][0][0] <= min_x + rec_size[0] / 2:
+            if min_y <= src_pts[i][0][1] <= min_y + rec_size[1] / 2:
+                result[0][0] = src_pts[i][0]
+            else:
+                result[1][0] = src_pts[i][0]
+        else:
+            if min_y <= src_pts[i][0][1] <= min_y + rec_size[1] / 2:
+                result[3][0] = src_pts[i][0]
+            else:
+                result[2][0] = src_pts[i][0]
+
+    return result
+
+def get_max_min_x_y(pts):
+    max_x = max(pts[:, :, 0])
+    min_x = min(pts[:, :, 0])
+    max_y = max(pts[:, :, 1])
+    min_y = min(pts[:, :, 1])
+    return max_x, min_x, max_y, min_y
