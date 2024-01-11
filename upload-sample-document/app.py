@@ -1,32 +1,34 @@
 import json
 import boto3
 import cv2
+import numpy as np
 
 from transform import perspective_transform
 
 
-def process_sample_document(event, context):
-    # Load the image from the S3 bucket
-    s3 = boto3.client('s3')
-    bucket_name = event['Records'][0]['s3']['bucket']['name']
-    document_key = event['Records'][0]['s3']['object']['key']
+def upload_sample_document(event, context):
+    # Get file from POST request
+    file_content = event['body'].encode('utf-8')
 
-    # Set up path
-    tmpkey = document_key.replace('/', '')
-    download_path = '/tmp/{}'.format(tmpkey)
-    upload_path = '/tmp/{}-processed'.format(tmpkey)
-
-    s3.download_file(bucket_name, document_key, download_path)
-    image = cv2.imread(download_path)
+    # Convert the file content to a numpy array
+    np_array = np.fromstring(file_content, np.uint8)
+    
+    # Convert numpy array to image
+    image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
 
     # Perform perspective transformation
     document = perspective_transform(image)
+
+    # Get id from path parameters
+    id = event['pathParameters']['id']
+    upload_path = f'/tmp/{id}-processed'
 
     # Save the processed image to the local filesystem
     cv2.imwrite(upload_path, document)
 
     # Save the processed image to the S3 bucket
-    processed_key = document_key.replace('original', 'processed')
+    processed_key = f'{id}-processed.jpg'
+    bucket_name = 'edurpa-document-template'
     s3.upload_file(upload_path, bucket_name, processed_key)
 
     # Return the processed image URL

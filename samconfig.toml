@@ -20,7 +20,7 @@ resolve_s3 = true
 s3_prefix = "serverless-document-process"
 region = "ap-southeast-2"
 disable_rollback = true
-image_repositories = []
+image_repositories = ["UploadSampleDocumentFunction=678601387840.dkr.ecr.ap-southeast-2.amazonaws.com/upload-sample-document"]
 
 [default.package.parameters]
 resolve_s3 = true

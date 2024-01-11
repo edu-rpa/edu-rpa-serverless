@@ -8,4 +8,4 @@ RUN yum -y install mesa-libGL.x86_64
 COPY . ./
 
 # Command can be overwritten by providing a different command in the template directly.
-CMD ["app.process_sample_document"]
+CMD ["app.upload_sample_document"]
