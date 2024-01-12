@@ -1,3 +1,4 @@
+import base64
 import json
 import boto3
 import cv2
@@ -7,21 +8,28 @@ from transform import perspective_transform
 
 
 def upload_sample_document(event, context):
-    # Get file from POST request
-    file_content = event['body'].encode('utf-8')
+    print(f'Event headers: {event["headers"]}')
 
-    # Convert the file content to a numpy array
-    np_array = np.fromstring(file_content, np.uint8)
-    
-    # Convert numpy array to image
+    # Get file from POST request
+    file_content = event['body']
+
+    # Decode the base64 string
+    decoded_image = base64.b64decode(file_content)
+
+    # Convert the bytes to a numpy array
+    np_array = np.fromstring(decoded_image, np.uint8)
+
+    # Read the image using OpenCV
     image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+
+    print(f'Image shape: {image.shape}')
 
     # Perform perspective transformation
     document = perspective_transform(image)
 
     # Get id from path parameters
     id = event['pathParameters']['id']
-    upload_path = f'/tmp/{id}-processed'
+    upload_path = f'/tmp/{id}-processed.jpg'
 
     # Save the processed image to the local filesystem
     cv2.imwrite(upload_path, document)
@@ -29,13 +37,20 @@ def upload_sample_document(event, context):
     # Save the processed image to the S3 bucket
     processed_key = f'{id}-processed.jpg'
     bucket_name = 'edurpa-document-template'
+    s3 = boto3.client('s3')
     s3.upload_file(upload_path, bucket_name, processed_key)
 
-    # Return the processed image URL
-    processed_url = f'https://{bucket_name}.s3.amazonaws.com/{processed_key}'
+    # Generate a presigned URL for the uploaded file
+    presigned_url = s3.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': bucket_name, 'Key': processed_key},
+        ExpiresIn=3600  # URL expires in 1 hour
+    )
+
+    # Return the presigned URL
     return {
         'statusCode': 200,
         'body': json.dumps({
-            'processed_url': processed_url
+            'url': presigned_url
         })
     }

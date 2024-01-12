@@ -46,6 +46,26 @@ Resources:
       DockerContext: ./upload-sample-document
       DockerTag: python3.9-v1
 
+  GetPresignedUrlFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ConnectS3:
+        Properties:
+          Destination:
+            Id: DocumentTemplateBucket
+          Permissions:
+            - Read
+    Properties:
+      PackageType: Zip
+      Handler: get-presigned-url/app.get_presigned_url_handler
+      Runtime: python3.9
+      Events:
+        HttpGet:
+          Type: HttpApi
+          Properties:
+            Path: /{id}/sample-document
+            Method: GET
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
@@ -56,6 +76,12 @@ Outputs:
   UploadSampleDocumentFunctionIamRole:
     Description: Implicit IAM Role created for Upload Sample Document function
     Value: !GetAtt UploadSampleDocumentFunctionRole.Arn
+  GetPresignedUrlFunction:
+    Description: Get Presigned Url Lambda Function ARN
+    Value: !GetAtt GetPresignedUrlFunction.Arn
+  GetPresignedUrlFunctionIamRole:
+    Description: Implicit IAM Role created for Get Presigned Url function
+    Value: !GetAtt GetPresignedUrlFunctionRole.Arn
   ServerlessHttpApi:
     Description: Serverless HTTP API ID
     Value: !Ref ServerlessHttpApi

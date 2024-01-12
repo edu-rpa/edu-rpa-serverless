@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'serverless-document-process
+
+  Template for serverless-document-process
+
+  '
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 256
+    LoggingConfig:
+      LogFormat: JSON
+Resources:
+  DocumentTemplateBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: edurpa-document-template
+    DeletionPolicy: Retain
+  UploadSampleDocumentFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ConnectS3:
+        Properties:
+          Destination:
+            Id: DocumentTemplateBucket
+          Permissions:
+          - Read
+          - Write
+    Properties:
+      PackageType: Image
+      Architectures:
+      - x86_64
+      Events:
+        HttpPost:
+          Type: HttpApi
+          Properties:
+            Path: /{id}/sample-document
+            Method: POST
+      ImageUri: uploadsampledocumentfunction:python3.9-v1
+    Metadata:
+      DockerContext: C:\Users\khanh\Thesis\serverless-document-process\upload-sample-document
+      DockerTag: python3.9-v1
+      Dockerfile: Dockerfile
+      SamResourceId: UploadSampleDocumentFunction
+Outputs:
+  UploadSampleDocumentFunction:
+    Description: Upload Sample Document Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - UploadSampleDocumentFunction
+      - Arn
+  UploadSampleDocumentFunctionIamRole:
+    Description: Implicit IAM Role created for Upload Sample Document function
+    Value:
+      Fn::GetAtt:
+      - UploadSampleDocumentFunctionRole
+      - Arn
+  ServerlessHttpApi:
+    Description: Serverless HTTP API ID
+    Value:
+      Ref: ServerlessHttpApi

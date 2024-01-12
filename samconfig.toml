@@ -26,7 +26,8 @@ image_repositories = ["UploadSampleDocumentFunction=678601387840.dkr.ecr.ap-sout
 resolve_s3 = true
 
 [default.sync.parameters]
-watch = true
+watch = false
+image_repositories = ["UploadSampleDocumentFunction=678601387840.dkr.ecr.ap-southeast-2.amazonaws.com/upload-sample-document"]
 
 [default.local_start_api.parameters]
 warm_containers = "EAGER"
