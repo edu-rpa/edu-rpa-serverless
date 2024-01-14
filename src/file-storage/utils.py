@@ -13,7 +13,10 @@ def validate_token(token):
     
 def authenticate(event):
     # Extract the authorization header
-    auth_header = event['headers']['authorization']
+    try:
+        auth_header = event['headers']['authorization']
+    except KeyError:
+        auth_header = event['headers']['Authorization']
     if not auth_header:
         raise Exception('Unauthorized')
 

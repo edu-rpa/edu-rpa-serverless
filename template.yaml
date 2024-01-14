@@ -138,6 +138,58 @@ Resources:
           JWT_SECRET: 927402
           FILE_STORAGE_BUCKET: edurpa-file-storage
 
+  CreateFolderFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ConnectS3:
+        Properties:
+          Destination:
+            Id: FileStorageBucket
+          Permissions:
+            - Write
+    Properties:
+      PackageType: Zip
+      CodeUri: src/file-storage/
+      Handler: app.create_folder
+      Runtime: python3.9
+      Events:
+        HttpPost:
+          Type: HttpApi
+          Properties:
+            Path: /file-storage/folder
+            Method: POST
+            ApiId: !Ref MyHttpApi
+      Environment:
+        Variables:
+          JWT_SECRET: 927402
+          FILE_STORAGE_BUCKET: edurpa-file-storage
+
+  GetFilesFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ConnectS3:
+        Properties:
+          Destination:
+            Id: FileStorageBucket
+          Permissions:
+            - Read
+    Properties:
+      PackageType: Zip
+      CodeUri: src/file-storage/
+      Handler: app.get_files
+      Runtime: python3.9
+      Events:
+        HttpGet:
+          Type: HttpApi
+          Properties:
+            Path: /file-storage
+            Method: GET
+            ApiId: !Ref MyHttpApi
+      Environment:
+        Variables:
+          JWT_SECRET: 927402
+          FILE_STORAGE_BUCKET: edurpa-file-storage
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
@@ -154,6 +206,12 @@ Outputs:
   GetPresignedUrlFileStorageFunction:
     Description: Get Presigned Url File Storage Lambda Function ARN
     Value: !GetAtt GetPresignedUrlFileStorageFunction.Arn
+  CreateFolderFunction:
+    Description: Create Folder Lambda Function ARN
+    Value: !GetAtt CreateFolderFunction.Arn
+  GetFilesFunction:
+    Description: Get Files Lambda Function ARN
+    Value: !GetAtt GetFilesFunction.Arn
   MyHttpApi:
     Description: Serverless HTTP API ID
     Value: !Ref MyHttpApi
