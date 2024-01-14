@@ -56,7 +56,7 @@ Resources:
             ApiId: !Ref MyHttpApi
     Metadata:
       Dockerfile: Dockerfile
-      DockerContext: ./upload-sample-document
+      DockerContext: ./src/upload-sample-document
       DockerTag: python3.9-v1
 
   GetPresignedUrlFunction:
@@ -70,7 +70,7 @@ Resources:
             - Read
     Properties:
       PackageType: Zip
-      Handler: get-presigned-url/app.get_presigned_url_handler
+      Handler: src/get-presigned-url/app.get_presigned_url_handler
       Runtime: python3.9
       Events:
         HttpGet:
