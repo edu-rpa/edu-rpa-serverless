@@ -1,7 +1,7 @@
 import json
 import boto3
 
-def get_presigned_url_handler(event, context):
+def get_presigned_url_sample_document(event, context):
     # Get id from path parameters
     id = event['pathParameters']['id']
     processed_key = f'{id}-processed.jpg'

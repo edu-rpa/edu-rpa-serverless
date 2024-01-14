@@ -21,6 +21,12 @@ Resources:
       BucketName: edurpa-document-template
     DeletionPolicy: Retain
 
+  FileStorageBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: edurpa-file-storage
+    DeletionPolicy: Retain
+
   MyHttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -59,7 +65,7 @@ Resources:
       DockerContext: ./src/upload-sample-document
       DockerTag: python3.9-v1
 
-  GetPresignedUrlFunction:
+  GetPresignedUrlSampleDocumentFunction:
     Type: AWS::Serverless::Function
     Connectors:
       ConnectS3:
@@ -70,7 +76,7 @@ Resources:
             - Read
     Properties:
       PackageType: Zip
-      Handler: src/get-presigned-url/app.get_presigned_url_handler
+      Handler: src/document-template/app.get_presigned_url_sample_document
       Runtime: python3.9
       Events:
         HttpGet:
@@ -80,6 +86,58 @@ Resources:
             Method: GET
             ApiId: !Ref MyHttpApi
 
+  UploadToFileStorageFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ConnectS3:
+        Properties:
+          Destination:
+            Id: FileStorageBucket
+          Permissions:
+            - Write
+    Properties:
+      PackageType: Zip
+      CodeUri: src/file-storage/
+      Handler: app.upload_file
+      Runtime: python3.9
+      Events:
+        HttpPost:
+          Type: HttpApi
+          Properties:
+            Path: /file-storage
+            Method: POST
+            ApiId: !Ref MyHttpApi
+      Environment:
+        Variables:
+          JWT_SECRET: 927402
+          FILE_STORAGE_BUCKET: edurpa-file-storage
+
+  GetPresignedUrlFileStorageFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ConnectS3:
+        Properties:
+          Destination:
+            Id: FileStorageBucket
+          Permissions:
+            - Read
+    Properties:
+      PackageType: Zip
+      CodeUri: src/file-storage/
+      Handler: app.get_presigned_url
+      Runtime: python3.9
+      Events:
+        HttpGet:
+          Type: HttpApi
+          Properties:
+            Path: /file-storage/presigned-url
+            Method: GET
+            ApiId: !Ref MyHttpApi
+      Environment:
+        Variables:
+          JWT_SECRET: 927402
+          FILE_STORAGE_BUCKET: edurpa-file-storage
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
@@ -87,15 +145,15 @@ Outputs:
   UploadSampleDocumentFunction:
     Description: Upload Sample Document Lambda Function ARN
     Value: !GetAtt UploadSampleDocumentFunction.Arn
-  UploadSampleDocumentFunctionIamRole:
-    Description: Implicit IAM Role created for Upload Sample Document function
-    Value: !GetAtt UploadSampleDocumentFunctionRole.Arn
-  GetPresignedUrlFunction:
-    Description: Get Presigned Url Lambda Function ARN
-    Value: !GetAtt GetPresignedUrlFunction.Arn
-  GetPresignedUrlFunctionIamRole:
-    Description: Implicit IAM Role created for Get Presigned Url function
-    Value: !GetAtt GetPresignedUrlFunctionRole.Arn
+  GetPresignedUrlSampleDocumentFunction:
+    Description: Get Presigned Url Sample Document Lambda Function ARN
+    Value: !GetAtt GetPresignedUrlSampleDocumentFunction.Arn
+  UploadToFileStorageFunction:
+    Description: Upload To File Storage Lambda Function ARN
+    Value: !GetAtt UploadToFileStorageFunction.Arn
+  GetPresignedUrlFileStorageFunction:
+    Description: Get Presigned Url File Storage Lambda Function ARN
+    Value: !GetAtt GetPresignedUrlFileStorageFunction.Arn
   MyHttpApi:
     Description: Serverless HTTP API ID
     Value: !Ref MyHttpApi
