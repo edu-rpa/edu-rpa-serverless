@@ -190,6 +190,32 @@ Resources:
           JWT_SECRET: 927402
           FILE_STORAGE_BUCKET: edurpa-file-storage
 
+  DeleteFileFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ConnectS3:
+        Properties:
+          Destination:
+            Id: FileStorageBucket
+          Permissions:
+            - Write
+    Properties:
+      PackageType: Zip
+      CodeUri: src/file-storage/
+      Handler: app.delete_file
+      Runtime: python3.9
+      Events:
+        HttpDelete:
+          Type: HttpApi
+          Properties:
+            Path: /file-storage
+            Method: DELETE
+            ApiId: !Ref MyHttpApi
+      Environment:
+        Variables:
+          JWT_SECRET: 927402
+          FILE_STORAGE_BUCKET: edurpa-file-storage
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
@@ -212,6 +238,9 @@ Outputs:
   GetFilesFunction:
     Description: Get Files Lambda Function ARN
     Value: !GetAtt GetFilesFunction.Arn
+  DeleteFileFunction:
+    Description: Delete File Lambda Function ARN
+    Value: !GetAtt DeleteFileFunction.Arn
   MyHttpApi:
     Description: Serverless HTTP API ID
     Value: !Ref MyHttpApi
