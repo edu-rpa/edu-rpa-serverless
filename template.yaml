@@ -32,8 +32,7 @@ Resources:
     Properties:
       CorsConfiguration:
         AllowMethods:
-          - POST
-          - GET
+          - "*"
         AllowHeaders:
           - "*"
         AllowOrigins:
