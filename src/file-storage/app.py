@@ -122,6 +122,9 @@ def get_files(event, context):
     # Get the list of files/directories from S3 at a specific path (not recursive)
     try:
         response = s3.list_objects_v2(Bucket=file_storage_bucket, Prefix=prefix)
+        if 'Contents' not in response:
+            return list_files_response([])
+
         files = []
         for file in response['Contents']:
             no_prefix_file_key = file['Key'].replace(prefix, '')
@@ -133,4 +136,5 @@ def get_files(event, context):
                 files.append(no_prefix_file_key)
         return list_files_response(files)
     except Exception as e:
+        print(f'Error: {e}')
         return server_error_response(str(e)) 
