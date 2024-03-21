@@ -9,6 +9,7 @@ stack_name = "serverless-document-process"
 [default.build.parameters]
 cached = true
 parallel = true
+# exclude = ["UploadSampleDocumentFunction"]
 
 [default.validate.parameters]
 lint = true
