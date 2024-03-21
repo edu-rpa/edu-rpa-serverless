@@ -14,6 +14,7 @@ Globals:
     # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
     LoggingConfig:
       LogFormat: JSON
+
 Resources:
   DocumentTemplateBucket:
     Type: 'AWS::S3::Bucket'
@@ -106,10 +107,12 @@ Resources:
             Path: /file-storage
             Method: POST
             ApiId: !Ref MyHttpApi
-      Environment:
-        Variables:
-          JWT_SECRET: 927402
-          FILE_STORAGE_BUCKET: edurpa-file-storage
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+            - 'secretsmanager:GetSecretValue'
+          Resource: 'arn:aws:secretsmanager:ap-southeast-2:678601387840:secret:edu-rpa/dev/secrets-wpE1hy'
 
   GetPresignedUrlFileStorageFunction:
     Type: AWS::Serverless::Function
@@ -132,10 +135,12 @@ Resources:
             Path: /file-storage/presigned-url
             Method: GET
             ApiId: !Ref MyHttpApi
-      Environment:
-        Variables:
-          JWT_SECRET: 927402
-          FILE_STORAGE_BUCKET: edurpa-file-storage
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+            - 'secretsmanager:GetSecretValue'
+          Resource: 'arn:aws:secretsmanager:ap-southeast-2:678601387840:secret:edu-rpa/dev/secrets-wpE1hy'
 
   CreateFolderFunction:
     Type: AWS::Serverless::Function
@@ -158,10 +163,12 @@ Resources:
             Path: /file-storage/folder
             Method: POST
             ApiId: !Ref MyHttpApi
-      Environment:
-        Variables:
-          JWT_SECRET: 927402
-          FILE_STORAGE_BUCKET: edurpa-file-storage
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+            - 'secretsmanager:GetSecretValue'
+          Resource: 'arn:aws:secretsmanager:ap-southeast-2:678601387840:secret:edu-rpa/dev/secrets-wpE1hy'
 
   GetFilesFunction:
     Type: AWS::Serverless::Function
@@ -184,10 +191,12 @@ Resources:
             Path: /file-storage
             Method: GET
             ApiId: !Ref MyHttpApi
-      Environment:
-        Variables:
-          JWT_SECRET: 927402
-          FILE_STORAGE_BUCKET: edurpa-file-storage
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+            - 'secretsmanager:GetSecretValue'
+          Resource: 'arn:aws:secretsmanager:ap-southeast-2:678601387840:secret:edu-rpa/dev/secrets-wpE1hy'
 
   DeleteFileFunction:
     Type: AWS::Serverless::Function
@@ -210,10 +219,12 @@ Resources:
             Path: /file-storage
             Method: DELETE
             ApiId: !Ref MyHttpApi
-      Environment:
-        Variables:
-          JWT_SECRET: 927402
-          FILE_STORAGE_BUCKET: edurpa-file-storage
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+            - 'secretsmanager:GetSecretValue'
+          Resource: 'arn:aws:secretsmanager:ap-southeast-2:678601387840:secret:edu-rpa/dev/secrets-wpE1hy'
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

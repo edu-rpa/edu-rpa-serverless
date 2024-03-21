@@ -6,14 +6,17 @@ import io
 from const import *
 from utils import *
 
-file_storage_bucket = os.environ['FILE_STORAGE_BUCKET']
+secret = get_secret()
+
+jwt_secret = secret.get('JWT_SECRET')
+file_storage_bucket = secret.get('FILE_STORAGE_BUCKET')
 
 def upload_file(event, context):
     print(f'Event headers: {event["headers"]}')
 
     # Authenticate the user
     try:
-        user_id = authenticate(event)
+        user_id = authenticate(event, jwt_secret)
     except Exception as e:
         return UNAUTHORIZED_RESPONSE
 
@@ -43,7 +46,7 @@ def get_presigned_url(event, context):
 
     # Authenticate the user
     try:
-        user_id = authenticate(event)
+        user_id = authenticate(event, jwt_secret)
     except Exception as e:
         return UNAUTHORIZED_RESPONSE
     
@@ -68,7 +71,7 @@ def delete_file(event, context):
 
     # Authenticate the user
     try:
-        user_id = authenticate(event)
+        user_id = authenticate(event, jwt_secret)
     except Exception as e:
         return UNAUTHORIZED_RESPONSE
     
@@ -89,7 +92,7 @@ def create_folder(event, context):
 
     # Authenticate the user
     try:
-        user_id = authenticate(event)
+        user_id = authenticate(event, jwt_secret)
     except Exception as e:
         return UNAUTHORIZED_RESPONSE
     
@@ -110,7 +113,7 @@ def get_files(event, context):
 
     # Authenticate the user
     try:
-        user_id = authenticate(event)
+        user_id = authenticate(event, jwt_secret)
     except Exception as e:
         return UNAUTHORIZED_RESPONSE
     
