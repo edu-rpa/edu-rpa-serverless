@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def perspective_transform(image):
+def perspective_transform(image, size):
     # Convert the image to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -29,7 +29,7 @@ def perspective_transform(image):
     src = np.zeros((4, 1, 2), dtype="float32")
     for i in range(4):
         src[i] = approx[i]   
-    dst, size = infer_dst(src)
+    dst = infer_dst(src, size)
     src = rearrange(src)
 
     # Perform perspective transformation to flatten the document
@@ -38,26 +38,13 @@ def perspective_transform(image):
 
     return result
 
-def infer_dst(src_pts):
+def infer_dst(src_pts, size):
     dst_pts = np.zeros((4, 2), dtype="float32")
-    size = np.zeros((2), dtype="float32")
-    
-    max_x, min_x, max_y, min_y = get_max_min_x_y(src_pts)
-
-    if max_x - min_x > max_y - min_y:
-        dst_pts[0] = [0, 0]
-        dst_pts[1] = [0, 600]
-        dst_pts[2] = [800, 600]
-        dst_pts[3] = [800, 0]
-        size = (800, 600)
-    else:
-        dst_pts[0] = [0, 0]
-        dst_pts[1] = [0, 800]
-        dst_pts[2] = [600, 800]
-        dst_pts[3] = [600, 0]
-        size = (600, 800)
-    
-    return dst_pts, size
+    dst_pts[0] = [0, 0]
+    dst_pts[1] = [0, size[1]]
+    dst_pts[2] = [size[0], size[1]]
+    dst_pts[3] = [size[0], 0]
+    return dst_pts
 
 def rearrange(src_pts):
     result = np.zeros((4, 1, 2), dtype="float32")
@@ -85,3 +72,6 @@ def get_max_min_x_y(pts):
     max_y = max(pts[:, :, 1])
     min_y = min(pts[:, :, 1])
     return max_x, min_x, max_y, min_y
+
+def resize_image(image, size):
+    return cv2.resize(image, (size[0], size[1]))

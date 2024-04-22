@@ -4,7 +4,7 @@ import boto3
 import cv2
 import numpy as np
 
-from transform import perspective_transform
+from transform import perspective_transform, resize_image
 
 
 def upload_sample_document(event, context):
@@ -24,8 +24,14 @@ def upload_sample_document(event, context):
 
     print(f'Image shape: {image.shape}')
 
-    # Perform perspective transformation
-    document = perspective_transform(image)
+    width = int(event['queryStringParameters']['width'])
+    height = int(event['queryStringParameters']['height'])
+
+    if event['queryStringParameters']['isScanned'] == 'false':
+        # Perform perspective transformation
+        document = perspective_transform(image, [width, height])
+    else:
+        document = resize_image(image, [width, height])
 
     # Get id from path parameters
     id = event['pathParameters']['id']
