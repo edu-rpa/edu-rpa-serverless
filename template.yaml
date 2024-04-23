@@ -226,6 +226,68 @@ Resources:
             - 'secretsmanager:GetSecretValue'
           Resource: 'arn:aws:secretsmanager:ap-southeast-2:678601387840:secret:edu-rpa/dev/secrets-wpE1hy'
 
+  RobotUploadFileFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ConnectS3:
+        Properties:
+          Destination:
+            Id: FileStorageBucket
+          Permissions:
+            - Write
+    Properties:
+      PackageType: Zip
+      CodeUri: src/file-storage/
+      Handler: app.robot_upload_file
+      Runtime: python3.9
+      Events:
+        HttpPost:
+          Type: HttpApi
+          Properties:
+            Path: /file-storage/robot/upload
+            Method: POST
+            ApiId: !Ref MyHttpApi
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+            - 'secretsmanager:GetSecretValue'
+          Resource: 'arn:aws:secretsmanager:ap-southeast-2:678601387840:secret:edu-rpa/dev/secrets-wpE1hy'
+        - Effect: Allow
+          Action:
+            - 's3:PutObjectTagging'
+          Resource:
+            - 'arn:aws:s3:::edurpa-file-storage'
+            - 'arn:aws:s3:::edurpa-file-storage/*'
+
+  RobotGetPresignedUrlFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      ConnectS3:
+        Properties:
+          Destination:
+            Id: FileStorageBucket
+          Permissions:
+            - Read
+    Properties:
+      PackageType: Zip
+      CodeUri: src/file-storage/
+      Handler: app.robot_get_presigned_url
+      Runtime: python3.9
+      Events:
+        HttpGet:
+          Type: HttpApi
+          Properties:
+            Path: /file-storage/robot/presigned-url
+            Method: GET
+            ApiId: !Ref MyHttpApi
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+            - 'secretsmanager:GetSecretValue'
+          Resource: 'arn:aws:secretsmanager:ap-southeast-2:678601387840:secret:edu-rpa/dev/secrets-wpE1hy'
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
