@@ -51,3 +51,14 @@ def authenticate(event, jwt_secret):
         raise Exception('Unauthorized')
     user_id = payload['id']
     return user_id
+
+def authenticate_robot(event, service_key):
+    # Extract the Service-Key header
+    try:
+        service_key_header = event['headers']['Service-Key']
+    except KeyError:
+        service_key_header = event['headers']['service-key']
+    
+    # Validate the service key
+    if service_key_header != service_key:
+        raise Exception('Unauthorized')
