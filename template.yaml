@@ -197,6 +197,12 @@ Resources:
           Action:
             - 'secretsmanager:GetSecretValue'
           Resource: 'arn:aws:secretsmanager:ap-southeast-2:678601387840:secret:edu-rpa/dev/secrets-wpE1hy'
+        - Effect: Allow
+          Action:
+            - 's3:GetObjectTagging'
+          Resource:
+            - 'arn:aws:s3:::edurpa-file-storage'
+            - 'arn:aws:s3:::edurpa-file-storage/*'
 
   DeleteFileFunction:
     Type: AWS::Serverless::Function
