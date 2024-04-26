@@ -130,14 +130,25 @@ def get_files(event, context):
             return list_files_response([])
 
         files = []
+        file_names = []
         for file in response['Contents']:
             no_prefix_file_key = file['Key'].replace(prefix, '')
             if '/' in no_prefix_file_key:
                 to_append = no_prefix_file_key.split('/')[0] + '/'
-                if to_append not in files:
-                    files.append(to_append)
+                if to_append not in file_names:
+                    files.append({
+                        'name': to_append,
+                        'type': 'folder'
+                    })
+                    file_names.append(to_append)
             else:
-                files.append(no_prefix_file_key)
+                tagging = s3.get_object_tagging(Bucket=file_storage_bucket, Key=file['Key'])
+                created_by = next((tag['Value'] for tag in tagging['TagSet'] if tag['Key'] == 'created-by'), None)
+                files.append({
+                    'name': no_prefix_file_key,
+                    'type': 'file',
+                    'created_by': created_by
+                })
         return list_files_response(files)
     except Exception as e:
         print(f'Error: {e}')
